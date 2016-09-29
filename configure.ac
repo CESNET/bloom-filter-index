@@ -39,7 +39,7 @@ AC_INIT([bloom_filter_indexes], [0.1])
 AM_INIT_AUTOMAKE([subdir-objects])
 
 AC_CONFIG_MACRO_DIR([m4])
-AC_CONFIG_SRCDIR([bf_index.c])
+#AC_CONFIG_SRCDIR([bf_index.c])
 AC_CONFIG_HEADERS([config.h])
 
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])

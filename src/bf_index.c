@@ -237,9 +237,9 @@ int store_index(index_t *index)
         return BFI_FILE_ERR;
     }
 
-    bf_clear_bytes(index->bf_ip, &bf_bytes);
-
     fclose(bf_file_ptr);
+
+    bf_clear_bytes(index->bf_ip, &bf_bytes);
 
     return BFI_OK;
 }
