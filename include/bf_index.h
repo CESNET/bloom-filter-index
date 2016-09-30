@@ -69,6 +69,11 @@ struct index_params {
 /**
  * \brief Structure for index.
  */
+
+#if defined (__cplusplus)
+extern "C" {
+#endif
+
 typedef void index_t;
 
 void print_last_index_error();
@@ -87,5 +92,9 @@ unsigned int stored_item_cnt(index_t *index);
 
 int store_index(index_t *index);
 int load_index(index_t *index);
+
+#if defined (__cplusplus)
+}
+#endif
 
 #endif //_BLOOMF_INDEXES_H
