@@ -79,7 +79,7 @@ void destroy_index(index_t *index);
 
 void add_addr_index(index_t *index, const unsigned char *buffer,
                     const size_t len);
-bool addr_contains(index_t *index, const unsigned char *buffer,
+bool addr_is_stored(index_t *index, const unsigned char *buffer,
                     const size_t len);
 void clear_index(index_t *index);
 void set_index_filename(index_t *index, char *filename);

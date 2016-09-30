@@ -155,7 +155,7 @@ void add_addr_index(index_t *index, const unsigned char *buffer,
  * \param[in] buffer Pointer to buffer containing value to check (ip address)
  * \param[in] len Length of value in buffer
  */
-bool addr_contains(index_t *index, const unsigned char *buffer,
+bool addr_is_stored(index_t *index, const unsigned char *buffer,
                     const size_t len)
 {
     return bf_contains(index->bf_ip, buffer, &len);
