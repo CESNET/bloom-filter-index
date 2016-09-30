@@ -1,0 +1,45 @@
+#"autoreconf -i" products
+Makefile.in
+/aclocal.m4
+/autom4te.cache/
+/config.h.in
+/configure
+/depcomp
+/install-sh
+/missing
+/test-driver
+/compile
+ar-lib
+libtool
+ltmain.sh
+m4/
+src/.libs/
+
+#"./configure" products
+Makefile
+.deps/
+/config.h
+/config.log
+/config.status
+/stamp-h1
+/src/.dirstamp
+config.guess
+config.sub
+configure.scan
+
+#vim
+*~
+*.swp
+*.swo
+
+#tests
+*.log
+*.trs
+
+#object files
+*.o
+*
+*.gitignore
+
+src/*.lo
+src/*.la
