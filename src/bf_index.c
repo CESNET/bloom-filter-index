@@ -267,6 +267,8 @@ int load_index(index_t *index)
         return BFI_FILE_ERR;
     }
 
+    index->bf_ip = new_bloom_filter();
+
     /// TODO read MAGIC
 
     if (fread(&index_len, sizeof(uint32_t), 1, bf_file_ptr) != 1) {
