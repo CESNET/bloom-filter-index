@@ -97,6 +97,8 @@ void destroy_index(index_t *index);
 
 void add_addr_index(index_t *index, const unsigned char *buffer,
                     const size_t len);
+bool addr_contains(index_t *index, const unsigned char *buffer,
+                    const size_t len);
 void clear_index(index_t *index);
 void set_index_filename(index_t *index, char *filename);
 unsigned int stored_item_cnt(index_t *index);

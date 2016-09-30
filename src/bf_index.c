@@ -149,6 +149,19 @@ void add_addr_index(index_t *index, const unsigned char *buffer,
 }
 
 /**
+ * \brief Check if address is contained in bloom filter
+ *                             .
+ * \param[in] index Pointer to index structure (contains bloom filter).
+ * \param[in] buffer Pointer to buffer containing value to check (ip address)
+ * \param[in] len Length of value in buffer
+ */
+bool addr_contains(index_t *index, const unsigned char *buffer,
+                    const size_t len)
+{
+    return bf_contains(index->bf_ip, buffer, &len);
+}
+
+/**
  * \brief Gets count of items stored in bloom filter index
  *
  * \param[in] index Pointer to index structure (contains bloom filter).
