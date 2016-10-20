@@ -35,8 +35,8 @@
 #
 
 AC_PREREQ([2.69])
-AC_INIT([bloom_filter_indexes], [0.1])
-AM_INIT_AUTOMAKE([subdir-objects])
+AC_INIT([bloom_filter_indexes], [0.01])
+AM_INIT_AUTOMAKE([subdir-objects] [foreign])
 
 AC_CONFIG_MACRO_DIR([m4])
 #AC_CONFIG_SRCDIR([bf_index.c])
@@ -44,10 +44,21 @@ AC_CONFIG_HEADERS([config.h])
 
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
-LT_INIT()
+AC_CONFIG_MACRO_DIR([m4])
 
 # Initialization
 CFLAGS="-Wall -std=gnu99"
+
+# Must be checked before default -g -O2 is set:
+AC_ARG_ENABLE([debug],
+        AC_HELP_STRING([--enable-debug],
+        [Enable build with debug symbols and without optimizations.]),
+        [if test "$enableval" = "yes"; then
+                CFLAGS="-g -O0 $CFLAGS"
+        fi], [CFLAGS="-O3 $CFLAGS"
+        CPPFLAGS="-DNDEBUG=1"])
+
+LT_INIT()
 
 # Checks for programs.
 AC_PROG_CC
@@ -60,6 +71,10 @@ AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
 
+AC_CHECK_PROGS([DOXYGEN], [doxygen])
+if test -z "$DOXYGEN";
+        then AC_MSG_WARN([Doxygen not found - continuing without Doxygen support])
+fi
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdint.h stdlib.h string.h unistd.h])
@@ -75,8 +90,9 @@ AC_TYPE_UINT8_T
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([pow])
 
+AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])AM_COND_IF([HAVE_DOXYGEN],
+        [AC_CONFIG_FILES([bfi.doxyfile])])
 AC_CONFIG_FILES([Makefile src/Makefile include/Makefile])
-
 
 AC_OUTPUT
 
