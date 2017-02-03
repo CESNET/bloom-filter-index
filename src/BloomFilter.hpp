@@ -43,27 +43,39 @@
 #include <string>
 #include <vector>
 
-// Changes (2016) >>
+// Changes (2016) >>  ======================================================= >>
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
 #include <cstring>
 #include <iomanip>
+#include <stdint.h>
 
-#define MIN_BLOOMF_HEADER_SIZE (sizeof(size_t) \
-                               + sizeof(bloom_type) \
-                               + sizeof(unsigned int) * 2 \
-                               + sizeof(unsigned long long int) * 4 \
-                               + sizeof(double)\
-                              )
 
-#define BLOOMF_HEADER_SIZE (sizeof(size_t) \
-                            + sizeof(bloom_type) * salt_.size() \
-                            + sizeof(unsigned int) * 2 \
-                            + sizeof(unsigned long long int) * 4 \
-                            + sizeof(double)\
+#define MIN_BLOOMF_HEADER_SIZE (sizeof(uint16_t)*4 \
+                               + sizeof(size_t) \
+                               + sizeof(salt_) \
+                               + sizeof(salt_count_) \
+                               + sizeof(table_size_) \
+                               + sizeof(raw_table_size_) \
+                               + sizeof(projected_element_count_) \
+                               + sizeof(inserted_element_count_) \
+                               + sizeof(random_seed_) \
+                               + sizeof(desired_false_positive_probability_)\
+                               )
+
+#define BLOOMF_HEADER_SIZE (sizeof(uint16_t)*4 \
+                           + sizeof(size_t) \
+                           + sizeof(salt_) * salt_.size() \
+                           + sizeof(salt_count_) \
+                           + sizeof(table_size_) \
+                           + sizeof(raw_table_size_) \
+                           + sizeof(projected_element_count_) \
+                           + sizeof(inserted_element_count_) \
+                           + sizeof(random_seed_) \
+                           + sizeof(desired_false_positive_probability_)\
                            )
-// << Changes (2016) <<
+// << Changes (2016) <<  ==================================================== <<
 
 static const std::size_t bits_per_char = 0x08;    // 8 bits in 1 char(unsigned)
 static const unsigned char bit_mask[bits_per_char] = {
@@ -344,15 +356,16 @@ public:
       return true;
    }
 
-   // Changes (2016) >>
+   // Changes (2016) >>  ==================================================== >>
 
-   // Method works as same as calling "if contains() then insert()" (a little
-   // difference is that insertion into bit_table_ is done even if "false" is
-   // returned from contains() method. Since inserted_element_count_ is not
-   // incremented in this case, this behavior has no effect.
-   //
-   // Method saves one for-loop of computing indices in comparison with calling
-   // contains() + insert().
+   /* Method works as same as calling "if contains() then insert()" (a little
+    * difference is that insertion into bit_table_ is done even if "false" is
+    * returned from contains() method. However, inserted_element_count_ is NOT
+    * incremented in this case (i.e. when element is already inserted).
+
+    * Method saves one for-loop of computing indices in comparison with calling
+    * contains() + insert().
+   */
    inline bool containsinsert(const unsigned char* key_begin, const std::size_t& length)
    {
       std::size_t bit_index = 0;
@@ -378,7 +391,7 @@ public:
 
       return present;
    }
-   // << Changes (2016) <<
+   // << Changes (2016) << ================================================== <<
 
    template<typename T>
    inline bool contains(const T& t) const
@@ -509,7 +522,8 @@ public:
       return salt_.size();
    }
 
-   // Changes (2016) >>
+   // Changes (2016) >>  ==================================================== >>
+   // For development ...
    void print_filter()
    {
       std::cout << "--- Filter settings ---------------------------------------" << std::endl;
@@ -533,44 +547,77 @@ public:
 
    uint32_t get_filter_as_bytes(char **buff)
    {
-      /* BloomFilter as bytes format:
+      /* Bloom filter binary format:
        * +---------------------------------------------------------------------+
-       * | size_t: salt_.size() | bloom_type []: salt_ | u int: salt_count_    |
+       * > ---- Architecture check header -------------------------------------<
+       * > ---- Bloom filter header -------------------------------------------<
+       * > ---- Bloom filter itself -------------------------------------------<
+       * +---------------------------------------------------------------------+
+       * That is:
+       * +---------------------------------------------------------------------+
+       * > sizeof(size_t)      | sizeof(bloom_type)      | sizeof(u int)       |
+       * | sizeof(ull int)     | sizeof(double)          | sizeof(cell_type)   <
+       * > size_t: salt_.size() | bloom_type []: salt_ | u int: salt_count_    |
        * | ull int: table_size_ | ull int: raw_table_size_                     |
        * | ull int: projected_element_count_ | u int: inserted_element_count_  |
-       * | ull int: random_seed_ | double: desired_false_positive_probability_ |
-       * | cell_type []: bit_table_                                            |
+       * | ull int: random_seed_ | double: desired_false_positive_probability_ <
+       * > cell_type []: bit_table_                                            <
        * +---------------------------------------------------------------------+
        * > count of salt_ elements is given by salt.size()
        * > count of bit_table_ elements is given by raw_table_size_
        */
 
+      // Get Bloom filter binary representation size
       uint32_t bf_len = BLOOMF_HEADER_SIZE + raw_table_size_*sizeof(cell_type);
       *buff = new char [bf_len];
       char *fb_cursor = *buff;
 
-      size_t s = salt_.size();
-      memcpy(fb_cursor, &s, sizeof(size_t));
-      fb_cursor += sizeof(size_t);
-      for (size_t i = 0; i < s; ++i){
-         memcpy(fb_cursor, &salt_[i], sizeof(bloom_type));
-         fb_cursor += sizeof(bloom_type);
-      }
-      memcpy(fb_cursor, &salt_count_, sizeof(unsigned int));
-      fb_cursor += sizeof(unsigned int);
+      // Store architecture check header
+      uint16_t type_size;
+      type_size = (uint16_t) sizeof(size_t);
+      memcpy(fb_cursor, &type_size, sizeof(type_size));
+      fb_cursor += sizeof(type_size);
+      type_size = (uint16_t) sizeof(bloom_type);
+      memcpy(fb_cursor, &type_size, sizeof(type_size));
+      fb_cursor += sizeof(type_size);
+      type_size = (uint16_t) sizeof(unsigned int);
+      memcpy(fb_cursor, &type_size, sizeof(type_size));
+      fb_cursor += sizeof(type_size);
+      type_size = (uint16_t) sizeof(unsigned long long int);
+      memcpy(fb_cursor, &type_size, sizeof(type_size));
+      fb_cursor += sizeof(type_size);
+      type_size = (uint16_t) sizeof(double);
+      memcpy(fb_cursor, &type_size, sizeof(type_size));
+      fb_cursor += sizeof(type_size);
+      type_size = (uint16_t) sizeof(cell_type);
+      memcpy(fb_cursor, &type_size, sizeof(type_size));
+      fb_cursor += sizeof(type_size);
 
-      memcpy(fb_cursor, &table_size_, sizeof(unsigned long long int));
-      fb_cursor += sizeof(unsigned long long int);
-      memcpy(fb_cursor, &raw_table_size_, sizeof(unsigned long long int));
-      fb_cursor += sizeof(unsigned long long int);
-      memcpy(fb_cursor, &projected_element_count_, sizeof(unsigned long long int));
-      fb_cursor += sizeof(unsigned long long int);
-      memcpy(fb_cursor, &inserted_element_count_, sizeof(unsigned int));
-      fb_cursor += sizeof(unsigned int);
-      memcpy(fb_cursor, &random_seed_, sizeof(unsigned long long int));
-      fb_cursor += sizeof(unsigned long long int);
-      memcpy(fb_cursor, &desired_false_positive_probability_, sizeof(double));
-      fb_cursor += sizeof(double);
+      // Store Bloom filter header
+      size_t s = salt_.size();
+      memcpy(fb_cursor, &s, sizeof(s));
+      fb_cursor += sizeof(s);
+      for (size_t i = 0; i < s; ++i){
+         memcpy(fb_cursor, &salt_[i], sizeof(salt_[i]));
+         fb_cursor += sizeof(salt_[i]);
+      }
+      memcpy(fb_cursor, &salt_count_, sizeof(salt_count_));
+      fb_cursor += sizeof(salt_count_);
+
+      memcpy(fb_cursor, &table_size_, sizeof(table_size_));
+      fb_cursor += sizeof(table_size_);
+      memcpy(fb_cursor, &raw_table_size_, sizeof(raw_table_size_));
+      fb_cursor += sizeof(raw_table_size_);
+      memcpy(fb_cursor, &projected_element_count_, sizeof(projected_element_count_));
+      fb_cursor += sizeof(projected_element_count_);
+      memcpy(fb_cursor, &inserted_element_count_, sizeof(inserted_element_count_));
+      fb_cursor += sizeof(inserted_element_count_);
+      memcpy(fb_cursor, &random_seed_, sizeof(random_seed_));
+      fb_cursor += sizeof(random_seed_);
+      memcpy(fb_cursor, &desired_false_positive_probability_, sizeof(desired_false_positive_probability_));
+      fb_cursor += sizeof(desired_false_positive_probability_);
+
+      // Store Bloom filter itself
       memcpy(fb_cursor, bit_table_, raw_table_size_ * sizeof(cell_type));
 //      fb_cursor += sizeof(raw_table_size_ * sizeof(cell_type));
 
@@ -579,45 +626,86 @@ public:
 
    int load_filter_from_bytes(const char *buff, uint32_t len)
    {
+      /* For Bloom filter binary format see get_filter_as_bytes() function
+       * above.
+      */
+
+      // Check for minimal possible size of valid index binary representation
       if (len < MIN_BLOOMF_HEADER_SIZE){
          return 1;
       }
 
       char *fb_cursor = (char *)buff;
 
+      // Check if stored datatype sizes matches architecture sizes
+      uint16_t type_size;
+      memcpy(&type_size, fb_cursor, sizeof(type_size));
+      if (type_size != (uint16_t) sizeof(size_t)) {
+            return -1;
+      }
+      fb_cursor += sizeof(type_size);
+      memcpy(&type_size, fb_cursor, sizeof(type_size));
+      if (type_size != (uint16_t) sizeof(bloom_type)) {
+            return -1;
+      }
+      fb_cursor += sizeof(type_size);
+      memcpy(&type_size, fb_cursor, sizeof(type_size));
+      if (type_size != (uint16_t) sizeof(unsigned int)) {
+            return -1;
+      }
+      fb_cursor += sizeof(type_size);
+      memcpy(&type_size, fb_cursor, sizeof(type_size));
+      if (type_size != (uint16_t) sizeof(unsigned long long int)) {
+            return -1;
+      }
+      fb_cursor += sizeof(type_size);
+      memcpy(&type_size, fb_cursor, sizeof(type_size));
+      if (type_size != (uint16_t) sizeof(double)) {
+            return -1;
+      }
+      fb_cursor += sizeof(type_size);
+      memcpy(&type_size, fb_cursor, sizeof(type_size));
+      if (type_size != (uint16_t) sizeof(cell_type)) {
+            return -1;
+      }
+      fb_cursor += sizeof(type_size);
+
+      // Load stored Bloom filter
+      // Load Bloom filter header first
       size_t s;
-      memcpy(&s, fb_cursor, sizeof(size_t));
-      fb_cursor += sizeof(size_t);
+      memcpy(&s, fb_cursor, sizeof(s));
+      fb_cursor += sizeof(s);
       for (size_t i = 0; i < s; ++i){
          bloom_type item;
-         memcpy(&item, fb_cursor, sizeof(bloom_type));
+         memcpy(&item, fb_cursor, sizeof(item));
          salt_.push_back(item);
-         fb_cursor += sizeof(bloom_type);
+         fb_cursor += sizeof(item);
       }
       if (len < BLOOMF_HEADER_SIZE){
          return 1;
       }
 
-      memcpy(&salt_count_, fb_cursor, sizeof(unsigned int));
-      fb_cursor += sizeof(unsigned int);
-      memcpy(&table_size_, fb_cursor, sizeof(unsigned long long int));
-      fb_cursor += sizeof(unsigned long long int);
-      memcpy(&raw_table_size_, fb_cursor, sizeof(unsigned long long int));
-      fb_cursor += sizeof(unsigned long long int);
-      memcpy(&projected_element_count_, fb_cursor ,sizeof(unsigned long long int));
-      fb_cursor += sizeof(unsigned long long int);
-      memcpy(&inserted_element_count_, fb_cursor, sizeof(unsigned int));
-      fb_cursor += sizeof(unsigned int);
-      memcpy(&random_seed_, fb_cursor, sizeof(unsigned long long int));
-      fb_cursor += sizeof(unsigned long long int);
-      memcpy(&desired_false_positive_probability_, fb_cursor, sizeof(double));
-      fb_cursor += sizeof(double);
+      memcpy(&salt_count_, fb_cursor, sizeof(salt_count_));
+      fb_cursor += sizeof(salt_count_);
+      memcpy(&table_size_, fb_cursor, sizeof(table_size_));
+      fb_cursor += sizeof(table_size_);
+      memcpy(&raw_table_size_, fb_cursor, sizeof(raw_table_size_));
+      fb_cursor += sizeof(raw_table_size_);
+      memcpy(&projected_element_count_, fb_cursor ,sizeof(projected_element_count_));
+      fb_cursor += sizeof(projected_element_count_);
+      memcpy(&inserted_element_count_, fb_cursor, sizeof(inserted_element_count_));
+      fb_cursor += sizeof(inserted_element_count_);
+      memcpy(&random_seed_, fb_cursor, sizeof(random_seed_));
+      fb_cursor += sizeof(random_seed_);
+      memcpy(&desired_false_positive_probability_, fb_cursor, sizeof(desired_false_positive_probability_));
+      fb_cursor += sizeof(desired_false_positive_probability_);
 
       if (len != BLOOMF_HEADER_SIZE + raw_table_size_*sizeof(cell_type)){
-         std::cerr << "Different sizes: " << len << " vs. " << BLOOMF_HEADER_SIZE + raw_table_size_*sizeof(cell_type) << std::endl;
+//         std::cerr << "Different sizes: " << len << " vs. " << BLOOMF_HEADER_SIZE + raw_table_size_*sizeof(cell_type) << std::endl;
          return 1;
       }
 
+      // Load Bloom filter itself
       bit_table_ = new cell_type[static_cast<std::size_t>(raw_table_size_)];
       memcpy(bit_table_, fb_cursor, raw_table_size_ * sizeof(cell_type));
 //      fb_cursor += sizeof(raw_table_size_ * sizeof(cell_type));
@@ -633,7 +721,7 @@ public:
    unsigned int get_inserted_element_count(){
       return inserted_element_count_;
    }
-   // << Changes (2016) <<
+   // << Changes (2016) << ================================================== <<
 
 
 protected:

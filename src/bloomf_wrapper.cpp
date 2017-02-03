@@ -3,7 +3,7 @@
  * \author Pavel Krobot <Pavel.Krobot@cesnet.cz>
  * \brief Bloom filter c++ implementation wrapper
  *
- * Copyright (C) 2016 CESNET, z.s.p.o.
+ * Copyright (C) 2016, 2017 CESNET, z.s.p.o.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -47,114 +47,115 @@
 extern "C" {
     // Bloom filter parameters /////////////////////////////////////////////////
     // Constructor
-    bloom_parameters *new_bloom_parameters()
+    bloom_parameters_h *new_bloom_parameters()
     {
-        return new bloom_parameters;
+        return reinterpret_cast<bloom_parameters_h *>(new bloom_parameters);
     }
 
     // Some getters & setters
-    unsigned long long int bp_get_proj_elem_cnt (bloom_parameters* bp)
+    unsigned long long int bp_get_proj_elem_cnt (bloom_parameters_h* bp)
     {
-        return bp->projected_element_count;
+        return reinterpret_cast<bloom_parameters *>(bp)->projected_element_count;
     }
 
-    double bp_get_false_pos_prob (bloom_parameters *bp)
+    double bp_get_false_pos_prob (bloom_parameters_h *bp)
     {
-        return bp->false_positive_probability;
+        return reinterpret_cast<bloom_parameters *>(bp)->false_positive_probability;
     }
 
-    void bp_set_proj_elem_cnt (bloom_parameters* bp, unsigned long long int cnt)
+    void bp_set_proj_elem_cnt (bloom_parameters_h* bp, unsigned long long int cnt)
     {
-        bp->projected_element_count = cnt;
+        reinterpret_cast<bloom_parameters *>(bp)->projected_element_count = cnt;
     }
 
-    void bp_set_false_pos_prob (bloom_parameters* bp, double prob)
+    void bp_set_false_pos_prob (bloom_parameters_h* bp, double prob)
     {
-        bp->false_positive_probability = prob;
+        reinterpret_cast<bloom_parameters *>(bp)->false_positive_probability = prob;
     }
 
     // Public methods and operators
-    bool bp_not(bloom_parameters* bp)
+    bool bp_not(bloom_parameters_h* bp)
     {
-        return !(*bp);
+        return !(*(reinterpret_cast<bloom_parameters *>(bp)));
     }
 
-    bool bp_compute_optimal_parameters(bloom_parameters* bp)
+    bool bp_compute_optimal_parameters(bloom_parameters_h* bp)
     {
-        return bp->compute_optimal_parameters();
+        return reinterpret_cast<bloom_parameters *>(bp)->compute_optimal_parameters();
     }
 
-    void del_bloom_parameters(bloom_parameters *bp)
+    void del_bloom_parameters(bloom_parameters_h *bp)
     {
-        delete bp;
+        delete reinterpret_cast<bloom_parameters *>(bp);
     }
 
     // Bloom filter ////////////////////////////////////////////////////////////
     // Constructors
-    bloom_filter *new_bloom_filter()
+    bloom_filter_h *new_bloom_filter()
     {
-        return new bloom_filter();
+        return reinterpret_cast<bloom_filter_h *>(new bloom_filter());
     }
 
-    bloom_filter *new_bloom_filter_bp(bloom_parameters *bp)
+    bloom_filter_h *new_bloom_filter_bp(bloom_parameters_h *bp)
     {
-        return new bloom_filter(*bp);
+        return reinterpret_cast<bloom_filter_h *>(new bloom_filter(*(reinterpret_cast<bloom_parameters *>(bp))));
     }
 
-    bloom_filter *new_bloom_filter_f(bloom_filter *bf)
+    bloom_filter_h *new_bloom_filter_f(bloom_filter_h *bf)
     {
-        return new bloom_filter(*bf);
+        return reinterpret_cast<bloom_filter_h *>(new bloom_filter(
+                const_cast<bloom_filter&>(*(reinterpret_cast<bloom_filter*>(bf)))));
     }
 
     // Public methods and operators
-    void bf_clear(bloom_filter *bf)
+    void bf_clear(bloom_filter_h *bf)
     {
-        bf->clear();
+        reinterpret_cast<bloom_filter*>(bf)->clear();
     }
 
-    bool bf_contains(bloom_filter *bf, const unsigned char* key_begin, const size_t *length)
+    bool bf_contains(bloom_filter_h *bf, const unsigned char* key_begin, const size_t *length)
     {
-        return bf->contains(key_begin, *length);
+        return reinterpret_cast<bloom_filter*>(bf)->contains(key_begin, *length);
     }
 
-    void bf_insert(bloom_filter *bf, const unsigned char* key_begin, const size_t *length)
+    void bf_insert(bloom_filter_h *bf, const unsigned char* key_begin, const size_t *length)
     {
-        bf->insert(key_begin, *length);
+        reinterpret_cast<bloom_filter*>(bf)->insert(key_begin, *length);
     }
 
-    bool bf_containsinsert(bloom_filter *bf, const unsigned char* key_begin, const size_t *length)
+    bool bf_containsinsert(bloom_filter_h *bf, const unsigned char* key_begin, const size_t *length)
     {
-        return bf->containsinsert(key_begin, *length);
+        return reinterpret_cast<bloom_filter*>(bf)->containsinsert(key_begin, *length);
     }
 
-    std::size_t bf_element_count(bloom_filter *bf)
+    std::size_t bf_element_count(bloom_filter_h *bf)
     {
-        return bf->element_count();
+        return reinterpret_cast<bloom_filter*>(bf)->element_count();
     }
 
-    uint32_t bf_get_filter_as_bytes(bloom_filter *bf, char **buff)
+    uint32_t bf_get_filter_as_bytes(bloom_filter_h *bf, char **buff)
     {
-        return bf->get_filter_as_bytes(buff);
+        return reinterpret_cast<bloom_filter*>(bf)->get_filter_as_bytes(buff);
     }
 
-    int bf_load_filter_from_bytes(bloom_filter *bf, const char *buff, uint32_t len)
+    int bf_load_filter_from_bytes(bloom_filter_h *bf, const char *buff, uint32_t len)
     {
-        return bf->load_filter_from_bytes(buff, len);
+        return reinterpret_cast<bloom_filter*>(bf)->load_filter_from_bytes(buff, len);
     }
 
-    void bf_clear_bytes(bloom_filter *bf, char **buff)
+    void bf_clear_bytes(bloom_filter_h *bf, char **buff)
     {
-        return bf->clear_bytes(buff);
+        return reinterpret_cast<bloom_filter*>(bf)->clear_bytes(buff);
     }
 
-    void bf_delete_filter(bloom_filter *bf)
+    void bf_delete_filter(bloom_filter_h *bf)
     {
-        delete bf;
+        delete reinterpret_cast<bloom_filter*>(bf);
     }
 
     // Getter
-    unsigned int bf_get_inserted_element_cnt (bloom_filter* bf)
+    uint64_t bf_get_inserted_element_cnt (bloom_filter_h *bf)
     {
-        return bf->get_inserted_element_count();
+        return reinterpret_cast<bloom_filter*>(bf)->get_inserted_element_count();
     }
 }

@@ -35,7 +35,7 @@
 #
 
 AC_PREREQ([2.69])
-AC_INIT([bloom_filter_indexes], [0.01])
+AC_INIT([bloom_filter_indexes], [0.02])
 AM_INIT_AUTOMAKE([subdir-objects] [foreign])
 
 AC_CONFIG_MACRO_DIR([m4])

@@ -3,7 +3,7 @@
  * \author Pavel Krobot <Pavel.Krobot@cesnet.cz>
  * \brief Bloom filter c++ implementation wrapper (header file).
  *
- * Copyright (C) 2016 CESNET, z.s.p.o.
+ * Copyright (C) 2016, 2017 CESNET, z.s.p.o.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -48,39 +48,39 @@
 extern "C" {
 #endif
 
-// Bloom filter parameters
-typedef struct bloom_parameters bloom_parameters;
+///- Bloom filter parameters
+typedef struct bloom_parameters_h bloom_parameters_h;
 // Constructor
-bloom_parameters *new_bloom_parameters();
+bloom_parameters_h *new_bloom_parameters();
 // Some getters & setters
-unsigned long long int bp_get_proj_elem_cnt (bloom_parameters* bp);
-double bp_get_false_pos_prob (bloom_parameters *bp);
-void bp_set_proj_elem_cnt (bloom_parameters* bp, unsigned long long int cnt);
-void bp_set_false_pos_prob (bloom_parameters* bp, double prob);
+unsigned long long int bp_get_proj_elem_cnt (bloom_parameters_h* bp);
+double bp_get_false_pos_prob (bloom_parameters_h *bp);
+void bp_set_proj_elem_cnt (bloom_parameters_h* bp, unsigned long long int cnt);
+void bp_set_false_pos_prob (bloom_parameters_h* bp, double prob);
 // Public methods and operators
-bool bp_not(bloom_parameters* bp);
-bool bp_compute_optimal_parameters(bloom_parameters* bp);
-void del_bloom_parameters(bloom_parameters *bp);
+bool bp_not(bloom_parameters_h* bp);
+bool bp_compute_optimal_parameters(bloom_parameters_h* bp);
+void del_bloom_parameters(bloom_parameters_h *bp);
 
 
-// Bloom filter
-typedef struct bloom_filter bloom_filter;
+///- Bloom filter
+typedef struct bloom_filter_h bloom_filter_h;
 // Constructors
-bloom_filter *new_bloom_filter();
-bloom_filter *new_bloom_filter_bp(bloom_parameters *bp);
-bloom_filter *new_bloom_filter_f(bloom_filter *bf);
+bloom_filter_h *new_bloom_filter();
+bloom_filter_h *new_bloom_filter_bp(bloom_parameters_h *bp);
+bloom_filter_h *new_bloom_filter_f(bloom_filter_h *bf);
 // Public methods and operators
-void bf_clear(bloom_filter *bf);
-bool bf_contains(bloom_filter *bf, const unsigned char* key_begin, const size_t *length);
-void bf_insert(bloom_filter *bf, const unsigned char* key_begin, const size_t *length);
-bool bf_containsinsert(bloom_filter *bf, const unsigned char* key_begin, const size_t *length);
-size_t bf_element_count(bloom_filter *bf);
-uint32_t bf_get_filter_as_bytes(bloom_filter *bf, char **buff);
-int bf_load_filter_from_bytes(bloom_filter *bf, const char *buff, uint32_t len);
-void bf_clear_bytes(bloom_filter *bf, char **buff);
-void bf_delete_filter(bloom_filter *bf);
+void bf_clear(bloom_filter_h *bf);
+bool bf_contains(bloom_filter_h *bf, const unsigned char* key_begin, const size_t *length);
+void bf_insert(bloom_filter_h *bf, const unsigned char* key_begin, const size_t *length);
+bool bf_containsinsert(bloom_filter_h *bf, const unsigned char* key_begin, const size_t *length);
+size_t bf_element_count(bloom_filter_h *bf);
+uint32_t bf_get_filter_as_bytes(bloom_filter_h *bf, char **buff);
+int bf_load_filter_from_bytes(bloom_filter_h *bf, const char *buff, uint32_t len);
+void bf_clear_bytes(bloom_filter_h *bf, char **buff);
+void bf_delete_filter(bloom_filter_h *bf);
 // Getter
-unsigned int bf_get_inserted_element_cnt (bloom_filter* bf);
+uint64_t bf_get_inserted_element_cnt(bloom_filter_h *bf);
 
 #ifdef __cplusplus
 }

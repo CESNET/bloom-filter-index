@@ -1,3 +1,8 @@
+0.02 2017-01-24
+    - Simplified API (removed file name storing - file name is now passed directly to store/load functions).
+    - Changed the way of printing error messages to re-entrant version (error codes + function for getting of according error description is used).
+    - Added magic for endianity check to Bloom filter index file format.
+    - Added "architecture check" header to Bloom filter index file format. Contains sizes of data types.
 
 0.01 2016-10-01
     - initial version
