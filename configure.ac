@@ -49,6 +49,9 @@ AC_CONFIG_MACRO_DIR([m4])
 # Initialization
 CFLAGS="-Wall -std=gnu99"
 
+RELEASE=1
+AC_SUBST(RELEASE)
+
 # Must be checked before default -g -O2 is set:
 AC_ARG_ENABLE([debug],
         AC_HELP_STRING([--enable-debug],
@@ -70,6 +73,8 @@ AC_PROG_LN_S
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
+# Check for rpmbuild
+AC_CHECK_PROG(RPMBUILD, rpmbuild, rpmbuild)
 
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 if test -z "$DOXYGEN";
@@ -92,7 +97,7 @@ AC_CHECK_FUNCS([pow])
 
 AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])AM_COND_IF([HAVE_DOXYGEN],
         [AC_CONFIG_FILES([bfi.doxyfile])])
-AC_CONFIG_FILES([Makefile src/Makefile include/Makefile])
+AC_CONFIG_FILES([bloom_filter_indexes.spec Makefile src/Makefile include/Makefile])
 
 AC_OUTPUT
 

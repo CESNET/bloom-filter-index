@@ -38,8 +38,13 @@ configure.scan
 
 #object files
 *.o
-*
 *.gitignore
+
+#spec file
+*.spec
+
+#doxygen file
+*.doxyfile
 
 src/*.lo
 src/*.la

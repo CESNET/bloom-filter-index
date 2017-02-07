@@ -40,7 +40,6 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <ipfixcol.h>
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdint.h>
