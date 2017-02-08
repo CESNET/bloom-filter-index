@@ -52,7 +52,7 @@
 #include <stdint.h>
 
 
-#define MIN_BLOOMF_HEADER_SIZE (sizeof(uint16_t)*4 \
+#define MIN_BLOOMF_HEADER_SIZE (sizeof(uint16_t)*6 \
                                + sizeof(size_t) \
                                + sizeof(salt_) \
                                + sizeof(salt_count_) \
@@ -64,9 +64,9 @@
                                + sizeof(desired_false_positive_probability_)\
                                )
 
-#define BLOOMF_HEADER_SIZE (sizeof(uint16_t)*4 \
+#define BLOOMF_HEADER_SIZE (sizeof(uint16_t)*6 \
                            + sizeof(size_t) \
-                           + sizeof(salt_) * salt_.size() \
+                           + sizeof(salt_[0]) * salt_.size() \
                            + sizeof(salt_count_) \
                            + sizeof(table_size_) \
                            + sizeof(raw_table_size_) \
@@ -565,7 +565,7 @@ public:
        * +---------------------------------------------------------------------+
        * > count of salt_ elements is given by salt.size()
        * > count of bit_table_ elements is given by raw_table_size_
-       */
+      */
 
       // Get Bloom filter binary representation size
       uint32_t bf_len = BLOOMF_HEADER_SIZE + raw_table_size_*sizeof(cell_type);
@@ -577,18 +577,23 @@ public:
       type_size = (uint16_t) sizeof(size_t);
       memcpy(fb_cursor, &type_size, sizeof(type_size));
       fb_cursor += sizeof(type_size);
+
       type_size = (uint16_t) sizeof(bloom_type);
       memcpy(fb_cursor, &type_size, sizeof(type_size));
       fb_cursor += sizeof(type_size);
+
       type_size = (uint16_t) sizeof(unsigned int);
       memcpy(fb_cursor, &type_size, sizeof(type_size));
       fb_cursor += sizeof(type_size);
+
       type_size = (uint16_t) sizeof(unsigned long long int);
       memcpy(fb_cursor, &type_size, sizeof(type_size));
       fb_cursor += sizeof(type_size);
+
       type_size = (uint16_t) sizeof(double);
       memcpy(fb_cursor, &type_size, sizeof(type_size));
       fb_cursor += sizeof(type_size);
+
       type_size = (uint16_t) sizeof(cell_type);
       memcpy(fb_cursor, &type_size, sizeof(type_size));
       fb_cursor += sizeof(type_size);
@@ -606,20 +611,25 @@ public:
 
       memcpy(fb_cursor, &table_size_, sizeof(table_size_));
       fb_cursor += sizeof(table_size_);
+
       memcpy(fb_cursor, &raw_table_size_, sizeof(raw_table_size_));
       fb_cursor += sizeof(raw_table_size_);
+
       memcpy(fb_cursor, &projected_element_count_, sizeof(projected_element_count_));
       fb_cursor += sizeof(projected_element_count_);
+
       memcpy(fb_cursor, &inserted_element_count_, sizeof(inserted_element_count_));
       fb_cursor += sizeof(inserted_element_count_);
+
       memcpy(fb_cursor, &random_seed_, sizeof(random_seed_));
       fb_cursor += sizeof(random_seed_);
+
       memcpy(fb_cursor, &desired_false_positive_probability_, sizeof(desired_false_positive_probability_));
       fb_cursor += sizeof(desired_false_positive_probability_);
 
       // Store Bloom filter itself
       memcpy(fb_cursor, bit_table_, raw_table_size_ * sizeof(cell_type));
-//      fb_cursor += sizeof(raw_table_size_ * sizeof(cell_type));
+//      fb_cursor += raw_table_size_ * sizeof(cell_type);
 
       return bf_len;
    }
